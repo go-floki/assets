@@ -1,7 +1,7 @@
 package assets
 
 import (
-	"github.com/frogprog/floki"
+	"github.com/go-floki/floki"
 	"io/ioutil"
 	"log"
 	"os"
