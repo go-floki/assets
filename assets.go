@@ -1,6 +1,7 @@
 package assets
 
 import (
+	//"bytes"
 	"github.com/go-floki/floki"
 	"io/ioutil"
 	"log"
@@ -51,6 +52,8 @@ func runWatchify() {
 
 	cmd := exec.Command("npm", "start")
 	cmd.Dir = javascriptDir
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	err := cmd.Start()
 	if err != nil {
@@ -73,6 +76,9 @@ func runStylus() {
 
 	cmd := exec.Command("stylus", "-u", "./node_modules/nib", "-u", "./node_modules/bootstrap3-stylus", "-w", "-o", "../../static/")
 	cmd.Dir = cssDir
+	//var out bytes.Buffer
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
 
 	err := cmd.Start()
 	if err != nil {
