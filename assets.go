@@ -50,7 +50,16 @@ func runWatchify() {
 
 	log.Println("running npm start in", javascriptDir)
 
-	cmd := exec.Command("npm", "start")
+	var cmd *exec.Cmd
+
+	if _, err := os.Stat(javascriptDir + "/Gulpfile.js"); os.IsNotExist(err) {
+		log.Println("running `npm start`")
+		cmd = exec.Command("npm", "start")
+	} else {
+		log.Println("running `gulp watchify`")
+		cmd = exec.Command("gulp", "watchify")
+	}
+
 	cmd.Dir = javascriptDir
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -89,8 +98,11 @@ func runStylus() {
 }
 
 func init() {
-	if floki.Env == floki.Dev {
-		runWatchify()
-		runStylus()
-	}
+	floki.RegisterAppEventHandler("ConfigureAppEnd", func(f *floki.Floki) {
+		compileAssets := f.Config.Bool("compileAssets", true)
+		if compileAssets && floki.Env == floki.Dev {
+			runWatchify()
+			runStylus()
+		}
+	})
 }
