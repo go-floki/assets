@@ -1,7 +1,6 @@
 package assets
 
 import (
-	//"bytes"
 	"github.com/go-floki/floki"
 	"io/ioutil"
 	"log"
@@ -9,6 +8,7 @@ import (
 	"os/exec"
 	"strconv"
 	"syscall"
+	"time"
 )
 
 func checkPidAlive(pidFile string) bool {
@@ -29,11 +29,16 @@ func checkPidAlive(pidFile string) bool {
 	process, err := os.FindProcess(int(pid))
 	if err != nil {
 		return false
+
 	} else {
 		err := process.Signal(syscall.Signal(0))
 		if err != nil {
 			return false
+		} else {
+			// if process is alive - wait for it to finish
+			process.Wait()
 		}
+
 	}
 
 	return true
@@ -101,8 +106,23 @@ func init() {
 	floki.RegisterAppEventHandler("ConfigureAppEnd", func(f *floki.Floki) {
 		compileAssets := f.Config.Bool("compileAssets", true)
 		if compileAssets && floki.Env == floki.Dev {
-			runWatchify()
-			runStylus()
+
+			go func() {
+				for {
+					runWatchify()
+					log.Println("Watchify crashed. Sleeping 5sec and restarting..")
+					time.Sleep(5 * time.Second)
+				}
+			}()
+
+			go func() {
+				for {
+					runStylus()
+					log.Println("Stylus crashed. Sleeping 5sec and restarting..")
+					time.Sleep(5 * time.Second)
+				}
+			}()
+
 		}
 	})
 }
